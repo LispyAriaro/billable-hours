@@ -32,10 +32,12 @@ import Foreign (Foreign)
 -- uploadServiceImage :: Request -> Response -> Pg.Pool -> Handler
 uploadServiceImage :: Request -> Response -> Pg.Pool -> Aff (Promise.Promise Foreign)
 uploadServiceImage req res dbPool = do
-  data1gg <- liftEffect (grabUploadData req "file")
+  uploadData <- liftEffect (grabUploadData req "file")
+
+  -- liftEffect $ log $ "uploadData: " <> show uploadData <> "\n"
 
 -- respond 200 {
 --   status: "success",
 --   message: "File upload was successful!"
 -- }
-  pure data1gg
+  pure uploadData

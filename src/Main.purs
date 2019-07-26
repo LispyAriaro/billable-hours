@@ -13,7 +13,7 @@ import Handlers.FileUploadHandler as FileUploadHandler
 import Middleware.BodyParser (jsonBodyParser)
 import Middleware.Helmet (helmet)
 import Node.Encoding (Encoding(..))
-import Node.Express.App (App, listenHttp, post, setProp, use, useExternal, useOnError)
+import Node.Express.App (App, listenHttp, post, setProp, use, useAt, useExternal, useOnError)
 import Node.Express.Handler (HandlerM(..))
 import Node.Express.Middleware.Static (static)
 import Node.FS.Aff (readTextFile)
@@ -53,9 +53,9 @@ appSetup dbPool = do
 
   liftEffect $ log "Setting up server!"
   setProp "json spaces" 4.0
-  use                                               (Utils.logger)
-  use                                               (static "/web")
+  use                                       (Utils.logger)
+  useAt "/web"                              (static "web")
 
-  post "/api/v1/serviceimageupload"                 (HandlerM $ \req res nxt -> void $ FileUploadHandler.uploadServiceImage req res dbPool)
+  post "/api/v1/serviceimageupload"         (HandlerM $ \req res nxt -> void $ FileUploadHandler.uploadServiceImage req res dbPool)
 
-  useOnError                                        (Utils.errorHandler)
+  useOnError                                (Utils.errorHandler)
