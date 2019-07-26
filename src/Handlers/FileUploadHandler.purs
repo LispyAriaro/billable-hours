@@ -1,43 +1,35 @@
 module Handlers.FileUploadHandler (uploadServiceImage) where
 
-import Prelude (pure)
-
-import Control.Promise as Promise
+import Control.Promise (toAff)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-import Data.Monoid ((<>))
-import Data.String.CodeUnits as Str
-import Database.Postgres (Pool, Query(Query), connect, execute_, query_, release) as Pg
-import Database.Postgres.Transaction (withTransaction)
-import Db.Base as Db
-import Db.Query as Query
-import Db.TableColumns as Columns
-import Db.TableNames as Tables
+import Database.Postgres (Pool) as Pg
 import Effect.Aff (Aff)
 import Effect.Aff.Class (liftAff)
 import Effect.Class (liftEffect)
-import Effect.Console (log, logShow)
-import Effect.Exception (error, Error, message)
-import Node.Express.Handler (Handler)
-import Node.Express.Request (getBody')
-import Node.Express.Response (sendJson)
+import Effect.Console (log)
+import Effect.Exception (Error)
+import FFI.Express (sendResponse, sendResponseWithStatus)
+import FFI.Multiparty (grabUploadData)
 import Node.Express.Types (Request, Response)
-import Prelude (Unit, bind, discard, show, ($), (==), (>>=), (<))
-import Utils (readForeignJson, respond)
-import FFI.Multiparty
-import Foreign (Foreign)
+import Prelude (bind, discard, pure, ($))
+import Utils (readForeignJson)
 
+-- import Prelude (Unit, bind, discard, show, ($), (==), (>>=), (<))
 
 
 -- uploadServiceImage :: Request -> Response -> Pg.Pool -> Handler
-uploadServiceImage :: Request -> Response -> Pg.Pool -> Aff (Promise.Promise Foreign)
+uploadServiceImage :: Request -> Response -> Pg.Pool -> Aff String
 uploadServiceImage req res dbPool = do
-  uploadData <- liftEffect (grabUploadData req "file")
+  liftEffect $ log "Got here 1"
 
-  -- liftEffect $ log $ "uploadData: " <> show uploadData <> "\n"
+  fileContentPromise <- liftEffect (grabUploadData req "file")
+  fileContent <- toAff fileContentPromise
 
--- respond 200 {
---   status: "success",
---   message: "File upload was successful!"
--- }
-  pure uploadData
+  liftEffect $ log "Got here 2"
+
+  let actualData = (readForeignJson fileContent) :: Either Error String
+  case actualData of
+    Right theData -> liftEffect $ sendResponse res {status: "success", data: theData}
+    Left error -> liftEffect $ sendResponseWithStatus res 400 {status: "fail"}
+
+  pure "Done"

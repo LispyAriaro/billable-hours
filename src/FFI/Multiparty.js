@@ -5,16 +5,15 @@ var fs = require('fs');
 
 exports.grabUploadData = function (req) {
   return function (fieldName) {
-    new Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
       try {
         var form = new multiparty.Form();
 
         form.parse(req, function(err, fields, files) {
           if(fields) {
-            console.log("files: ", files);
-            console.log("files[fieldName][0]: ", files[fieldName][0]);
+            if(files && files[fieldName] && !fs.lstatSync(files[fieldName][0].path).isDirectory()) {
+              console.log("files[fieldName][0]: ", files[fieldName][0]);
 
-            if(files && !fs.lstatSync(files[fieldName][0].path).isDirectory()) {
               fs.readFile(files[fieldName][0].path, 'utf8', function(err, contents) {
                 resolve(contents);
               });
@@ -27,6 +26,9 @@ exports.grabUploadData = function (req) {
         var errorMsg = "Sorry, uploading the file failed!";
         reject(errorMsg);
       }
+    }).catch(function() {
+      var errorMsg = "Sorry, uploading the image failed 2!";
+      return {status: 'failed', error: errorMsg};
     });
   }
 }
