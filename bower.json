@@ -19,6 +19,7 @@
     "purescript-simple-json": "^4.0.0",
     "purescript-aff-promise": "^2.0.1",
     "purescript-affjax": "^7.0.0",
+    "purescript-transformers": "^4.2.0",
     "purescript-test-unit": "^15.0.0",
     "purescript-quick-check": "^6.1.0"
   },

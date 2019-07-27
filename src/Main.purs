@@ -54,7 +54,7 @@ appSetup dbPool = do
   liftEffect $ log "Setting up server!"
   setProp "json spaces" 4.0
   use                                       (Utils.logger)
-  useAt "/web"                              (static "web")
+  useAt "/"                              (static "web")
 
   post "/api/v1/serviceimageupload"         (HandlerM $ \req res nxt -> void $ FileUploadHandler.uploadServiceImage req res dbPool)
 

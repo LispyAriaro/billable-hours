@@ -18,6 +18,13 @@ import Node.Express.Response (sendJson, setStatus)
 import Simple.JSON as JSON
 import Types (DbConfig)
 
+import Control.Monad.Maybe.Trans (runMaybeT, MaybeT(..))
+import Data.Maybe
+import Control.Monad.Trans.Class (lift)
+
+import Effect (Effect)
+import Node.Process (lookupEnv)
+
 
 -- getDbConfig :: String -> Either String Pg.ClientConfig
 getDevDbConfig :: String -> Either String DbConfig
@@ -38,6 +45,21 @@ getDbEnv mDatabase mHost mPort mUser mPassword =
       user: user, password: password,
       ssl: false
     }
+
+liftMaybe :: forall m a. Applicative m => Maybe a -> MaybeT m a
+liftMaybe m = MaybeT (pure m)
+
+liftMaybeM :: forall m a. Monad m => m (Maybe a) -> MaybeT m a
+liftMaybeM m = MaybeT m
+
+-- getDbConfig :: forall a. MaybeT (Effect Unit) a
+-- getDbConfig = do
+--   database <- lift $ lookupEnv "database"
+--   -- host <- lookupEnv "host"
+--   -- user <- lookupEnv "user"
+--   -- password <- lookupEnv "password"
+--   -- dbPort <- lookupEnv "port"
+--   pure unit
 
 logger :: Handler
 logger = do

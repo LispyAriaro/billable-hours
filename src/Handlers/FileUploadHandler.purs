@@ -9,21 +9,17 @@ import Effect.Exception (Error)
 import FFI.Express (sendResponse, sendResponseWithStatus)
 import FFI.Multiparty (grabUploadData)
 import Node.Express.Types (Request, Response)
-import Prelude (bind, discard, pure, ($))
+import Prelude (Unit, bind, discard, pure, unit, ($), (>>=))
 import Utils (readForeignJson)
 
--- import Prelude (Unit, bind, discard, show, ($), (==), (>>=), (<))
 
-
--- uploadServiceImage :: Request -> Response -> Pg.Pool -> Handler
-uploadServiceImage :: Request -> Response -> Pg.Pool -> Aff String
+uploadServiceImage :: Request -> Response -> Pg.Pool -> Aff Unit
 uploadServiceImage req res dbPool = do
-  fileContentPromise <- liftEffect (grabUploadData req "file")
-  fileContent <- toAff fileContentPromise
+  fileResult <- liftEffect (grabUploadData req "file") >>= toAff
 
-  let actualData = (readForeignJson fileContent) :: Either Error String
-  case actualData of
-    Right theData -> liftEffect $ sendResponse res {status: "success", data: theData}
+  let fileContent = (readForeignJson fileResult) :: Either Error String
+  case fileContent of
+    Right actualData -> liftEffect $ sendResponse res {status: "success", data: actualData}
     Left error -> liftEffect $ sendResponseWithStatus res 400 {status: "fail"}
 
-  pure "Done"
+  pure unit
