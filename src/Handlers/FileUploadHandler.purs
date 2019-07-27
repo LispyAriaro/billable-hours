@@ -4,9 +4,7 @@ import Control.Promise (toAff)
 import Data.Either (Either(..))
 import Database.Postgres (Pool) as Pg
 import Effect.Aff (Aff)
-import Effect.Aff.Class (liftAff)
 import Effect.Class (liftEffect)
-import Effect.Console (log)
 import Effect.Exception (Error)
 import FFI.Express (sendResponse, sendResponseWithStatus)
 import FFI.Multiparty (grabUploadData)
@@ -20,12 +18,8 @@ import Utils (readForeignJson)
 -- uploadServiceImage :: Request -> Response -> Pg.Pool -> Handler
 uploadServiceImage :: Request -> Response -> Pg.Pool -> Aff String
 uploadServiceImage req res dbPool = do
-  liftEffect $ log "Got here 1"
-
   fileContentPromise <- liftEffect (grabUploadData req "file")
   fileContent <- toAff fileContentPromise
-
-  liftEffect $ log "Got here 2"
 
   let actualData = (readForeignJson fileContent) :: Either Error String
   case actualData of
